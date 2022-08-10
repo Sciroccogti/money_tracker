@@ -1,6 +1,30 @@
-import 'package:flutter/material.dart';
+/*
+ * @file main.dart
+ * @author Sciroccogti (scirocco_gti@yeah.net)
+ * @brief 
+ * @date 2022-08-10 13:24:46
+ * @modified: 2022-08-10 21:48:34
+ */
 
-void main() => runApp(const MyApp());
+import 'package:flutter/material.dart';
+import 'package:money_tracker/database/bill.dart';
+import 'package:money_tracker/database/dbprovider.dart';
+import 'package:money_tracker/pages/home.dart';
+import 'package:money_tracker/pages/stats.dart';
+import 'package:money_tracker/vars.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
+    appName = packageInfo.appName;
+    packageName = packageInfo.packageName;
+    appVersion = packageInfo.version;
+    // String buildNumber = packageInfo.buildNumber;
+  });
+  await DBProvider.getInstanceAndInit();
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -43,16 +67,15 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     Navigator.of(context).pop();
   }
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    Text(
-      'Index 0: Home',
-      style: optionStyle,
-    ),
-    Text(
-      'Index 1: Business',
-      style: optionStyle,
-    ),
-  ];
+  List<Widget> bodyList_ = [];
+
+  @override
+  void initState() {
+    bodyList_
+      ..add(const HomePage())
+      ..add(const StatsPage());
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,12 +83,20 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       appBar: AppBar(
         title: const Text('Money Tracker'),
         actions: [
-          IconButton(onPressed: () {}, icon: Icon(Icons.move_to_inbox)),
-          IconButton(onPressed: () {}, icon: Icon(Icons.search)),
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.move_to_inbox),
+            tooltip: "导入账单",
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.search),
+            tooltip: "搜索账单",
+          ),
         ],
       ),
       body: Center(
-        child: _widgetOptions[_curPageIndex],
+        child: bodyList_[_curPageIndex],
       ),
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {
@@ -103,9 +134,12 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => setState(() {
-          _count++;
-        }),
+        onPressed: () {
+          // TODO: testing SQL
+          Bill bill = Bill(0, 0, 123.45, 123445456, "测试", "数码");
+          DBProvider provider = DBProvider.getInstance();
+          provider.insertBill(bill);
+        },
         tooltip: '记一笔',
         child: const Icon(Icons.add),
       ),
