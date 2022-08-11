@@ -6,10 +6,13 @@
  * @modified: 2022-08-10 22:16:34
  */
 
+import 'package:flutter/material.dart';
+
 // from ./pubspec.yaml
 String appName = "";
 String packageName = "";
 String appVersion = "";
 bool isBillsInit = false;
+const primaryColor = Colors.blue;
 
 int dbLength = 0;

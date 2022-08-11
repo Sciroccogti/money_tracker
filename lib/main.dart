@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:money_tracker/database/bill.dart';
 import 'package:money_tracker/database/dbprovider.dart';
+import 'package:money_tracker/pages/drawer.dart';
 import 'package:money_tracker/pages/home.dart';
 import 'package:money_tracker/pages/stats.dart';
 import 'package:money_tracker/vars.dart';
@@ -119,20 +120,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
           ),
         ],
       ),
-      drawer: Drawer(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const Text('This is the Drawer'),
-              ElevatedButton(
-                onPressed: _closeDrawer,
-                child: const Text('Close Drawer'),
-              ),
-            ],
-          ),
-        ),
-      ),
+      drawer: const MyDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // TODO: testing SQL
