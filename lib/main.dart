@@ -12,6 +12,7 @@ import 'package:money_tracker/database/dbprovider.dart';
 import 'package:money_tracker/pages/drawer.dart';
 import 'package:money_tracker/pages/home.dart';
 import 'package:money_tracker/pages/stats.dart';
+import 'package:money_tracker/pages/submit.dart';
 import 'package:money_tracker/vars.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -38,7 +39,8 @@ class MyApp extends StatelessWidget {
       title: _title,
       theme: ThemeData(
         useMaterial3: true,
-        // primarySwatch: primaryColor,
+        primaryColor: primaryColor,
+        backgroundColor: secondaryColor,
       ),
       home: MyStatefulWidget(),
     );
@@ -123,10 +125,16 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       drawer: const MyDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: testing SQL
-          Bill bill = Bill(0, 0, 123.45, 123445456, "测试", "数码");
-          DBProvider provider = DBProvider.getInstance();
-          provider.insertBill(bill);
+          // // TODO: testing SQL
+          // Bill bill = Bill(0, 0, 123.45, 123445456, "测试", "数码");
+          // DBProvider provider = DBProvider.getInstance();
+          // provider.insertBill(bill);
+          Navigator.of(context).push(
+              MaterialPageRoute(
+                  fullscreenDialog: true,
+                  builder: (BuildContext context) {
+                    return SubmitPage();
+                  }));
         },
         tooltip: '记一笔',
         child: const Icon(Icons.add),

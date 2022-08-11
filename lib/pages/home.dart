@@ -30,6 +30,7 @@ class _HomePageState extends State<HomePage> {
       ),
       // TODO: testing SQL
       floatingActionButton: FloatingActionButton(
+        heroTag: "refresh",
         onPressed: () => setState(() {
           _loadBills();
           build(context);

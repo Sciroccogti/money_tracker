@@ -13,6 +13,9 @@ String appName = "";
 String packageName = "";
 String appVersion = "";
 bool isBillsInit = false;
-const primaryColor = Colors.blue;
+Color primaryColor = Colors.lightBlue.shade900;
+Color secondaryColor = Colors.lightBlue.shade50;
+Color primaryColorDark = Colors.blue.shade200;
+Color secondaryColorDark = Colors.lightBlue.shade900;
 
 int dbLength = 0;
