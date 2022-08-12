@@ -7,6 +7,9 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:money_tracker/database/bill.dart';
+import 'package:money_tracker/database/dbprovider.dart';
 import 'package:money_tracker/vars.dart';
 
 class SubmitPage extends StatefulWidget {
@@ -27,6 +30,8 @@ class _SubmitPageState extends State<SubmitPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    Bill bill = Bill(-1, -1, -1, -1, "", "");
+
     return Scaffold(
       appBar: AppBar(
         title: Text("新增账单"),
@@ -50,9 +55,56 @@ class _SubmitPageState extends State<SubmitPage> with TickerProviderStateMixin {
       ),
       body: TabBarView(
         controller: _tabController,
-        children: const <Widget>[
+        children: <Widget>[
           Center(
-            child: Text("It's cloudy here"),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      labelText: "备注",
+                    ),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (String? value) {
+                      if (value != null) {
+                        bill.name = value;
+                        return null;
+                      }
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      labelText: "金额",
+                    ),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (String? value) {
+                      if (value != null) {
+                        bill.amount = double.tryParse(value) ?? 0;
+                        if (bill.amount == 0) {
+                          return "请输入正确的金额！";
+                        }
+                        return null;
+                      } else {
+                        return "请输入正确的金额！";
+                      }
+                    },
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r"[0-9,\.]"))
+                    ],
+                  ),
+                ),
+                OutlinedButton(
+                  onPressed: () {
+                    DBProvider provider = DBProvider.getInstance();
+                    provider.insertBill(bill);
+                  },
+                  child: Icon(Icons.check),
+                )
+              ],
+            ),
           ),
           Center(
             child: Text("It's rainy here"),
