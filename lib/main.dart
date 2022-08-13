@@ -7,6 +7,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:money_tracker/database/bill.dart';
 import 'package:money_tracker/database/dbprovider.dart';
 import 'package:money_tracker/pages/drawer.dart';
@@ -49,6 +50,16 @@ class MyApp extends StatelessWidget {
         backgroundColor: secondaryColor,
       ),
       home: MyStatefulWidget(),
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        Locale('zh', 'CN'),
+        Locale('en', 'US'),
+      ],
+      locale: Locale('zh', 'CN'),
     );
   }
 }
@@ -87,6 +98,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   @override
   Widget build(BuildContext context) {
+    print("redraw main!");
     return Scaffold(
       appBar: AppBar(
         title: const Text('Money Tracker'),

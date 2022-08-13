@@ -87,4 +87,25 @@ class DBProvider with ChangeNotifier {
     length++;
     notifyListeners();
   }
+
+  Future<List<Bill>> getBills() async {
+    Database database = await db;
+    List<Map<String, dynamic>> maps_ = await database.query(
+      "Bills",
+    );
+    List<Bill> results_ = [];
+
+    for (Map<String, dynamic> map in maps_) {
+      results_.add(Bill.fromMap(map));
+    }
+
+    print("results_.length=");
+    print(results_.length);
+
+    return results_;
+  }
+
+// void getBillByTime() async {
+//   DateTime.now().millisecondsSinceEpoch;
+// }
 }

@@ -16,5 +16,6 @@ Color primaryColor = Colors.lightBlue.shade900;
 Color secondaryColor = Colors.lightBlue.shade50;
 Color primaryColorDark = Colors.blue.shade200;
 Color secondaryColorDark = Colors.lightBlue.shade900;
+List<Color> typeColors_ = [Colors.red, Colors.green, Colors.blue];
 
 int dbLength = 0;

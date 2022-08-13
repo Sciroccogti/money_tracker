@@ -13,14 +13,63 @@ import 'package:money_tracker/database/dbprovider.dart';
 import 'package:money_tracker/vars.dart';
 
 class SubmitPage extends StatefulWidget {
-  const SubmitPage({Key? key}) : super(key: key);
+  const SubmitPage({Key? key, this.restorationId}) : super(key: key);
+
+  final String? restorationId;
 
   @override
   State<StatefulWidget> createState() => _SubmitPageState();
 }
 
-class _SubmitPageState extends State<SubmitPage> with TickerProviderStateMixin {
+class _SubmitPageState extends State<SubmitPage>
+    with TickerProviderStateMixin, RestorationMixin {
   late TabController _tabController;
+  final RestorableDateTime _selectedDate = RestorableDateTime(DateTime.now()); // 选中的日期
+
+  @override
+  String? get restorationId => widget.restorationId;
+  late final RestorableRouteFuture<DateTime?> _restorableDatePickerRouteFuture =
+      RestorableRouteFuture<DateTime?>(
+    onComplete: (DateTime? newSelectedDate) {
+      if (newSelectedDate != null) {
+        setState(() {
+          _selectedDate.value = newSelectedDate;
+        });
+      }
+    },
+    onPresent: (NavigatorState navigator, Object? arguments) {
+      return navigator.restorablePush(
+        _datePickerRoute,
+        arguments: _selectedDate.value.millisecondsSinceEpoch,
+      );
+    },
+  );
+
+  static Route<DateTime> _datePickerRoute(
+    BuildContext context,
+    Object? arguments,
+  ) {
+    return DialogRoute<DateTime>(
+      context: context,
+      builder: (BuildContext context) {
+        return DatePickerDialog(
+          restorationId: 'date_picker_dialog',
+          initialEntryMode: DatePickerEntryMode.calendarOnly,
+          initialDate: DateTime.fromMillisecondsSinceEpoch(arguments! as int),
+          firstDate: DateTime(1999),
+          lastDate: DateTime.now(),
+        );
+      },
+    );
+  }
+
+  // restore the date as selected
+  @override
+  void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
+    registerForRestoration(_selectedDate, 'selected_date');
+    registerForRestoration(
+        _restorableDatePickerRouteFuture, 'date_picker_route_future');
+  }
 
   @override
   void initState() {
@@ -33,31 +82,54 @@ class _SubmitPageState extends State<SubmitPage> with TickerProviderStateMixin {
     Bill bill = Bill(-1, -1, -1, -1, "", "");
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("新增账单"),
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        bottom: TabBar(
-          indicatorColor: secondaryColor,
-          controller: _tabController,
-          tabs: [
-            Tab(
-              text: "支出",
-            ),
-            Tab(
-              text: "收入",
-            ),
-            Tab(
-              text: "转账",
-            ),
-          ],
+        appBar: AppBar(
+          title: Text("新增账单"),
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          bottom: TabBar(
+            indicatorColor: secondaryColor,
+            controller: _tabController,
+            tabs: [
+              Tab(
+                text: "支出",
+              ),
+              Tab(
+                text: "收入",
+              ),
+              Tab(
+                text: "转账",
+              ),
+            ],
+          ),
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: <Widget>[
-          Center(
-            child: Row(
+        body: Column(
+          children: [
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: <Widget>[
+                  Row(
+                    children: [Text("It's cloudy here")],
+                  ),
+                  Row(
+                    children: [Text("It's rainy here")],
+                  ),
+                  Row(
+                    children: [Text("It's sunny here")],
+                  ),
+                ],
+              ),
+            ),
+            Row(
+              children: [
+                TextButton(
+                    onPressed: () {
+                      _restorableDatePickerRouteFuture.present();
+                    },
+                    child: Text(_selectedDate.value.toString()))
+              ],
+            ),
+            Row(
               children: [
                 Expanded(
                   child: TextFormField(
@@ -68,8 +140,8 @@ class _SubmitPageState extends State<SubmitPage> with TickerProviderStateMixin {
                     validator: (String? value) {
                       if (value != null) {
                         bill.name = value;
-                        return null;
                       }
+                      return null;
                     },
                   ),
                 ),
@@ -77,6 +149,7 @@ class _SubmitPageState extends State<SubmitPage> with TickerProviderStateMixin {
                   child: TextFormField(
                     decoration: InputDecoration(
                       labelText: "金额",
+                      // fillColor: typeColors_[_tabController.index],
                     ),
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: (String? value) {
@@ -100,6 +173,8 @@ class _SubmitPageState extends State<SubmitPage> with TickerProviderStateMixin {
                   onPressed: () {
                     DBProvider provider = DBProvider.getInstance();
                     if (bill.amount > 0) {
+                      bill.type = _tabController.index;
+                      bill.time = _selectedDate.value.millisecondsSinceEpoch;
                       provider.insertBill(bill);
                       Navigator.of(context).pop();
                     }
@@ -108,15 +183,7 @@ class _SubmitPageState extends State<SubmitPage> with TickerProviderStateMixin {
                 )
               ],
             ),
-          ),
-          Center(
-            child: Text("It's rainy here"),
-          ),
-          Center(
-            child: Text("It's sunny here"),
-          ),
-        ],
-      ),
-    );
+          ],
+        ));
   }
 }
