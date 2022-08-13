@@ -15,6 +15,7 @@ import 'package:money_tracker/pages/stats.dart';
 import 'package:money_tracker/pages/submit.dart';
 import 'package:money_tracker/vars.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,8 +25,13 @@ void main() async {
     appVersion = packageInfo.version;
     // String buildNumber = packageInfo.buildNumber;
   });
-  await DBProvider.getInstanceAndInit();
-  runApp(const MyApp());
+
+  await DBProvider.getInstanceAndInit(); // TODO: ChangeNotifierProvider 也会实例化
+
+  runApp(ChangeNotifierProvider(
+    create: (context) => DBProvider(),
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -56,7 +62,6 @@ class MyStatefulWidget extends StatefulWidget {
 
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   int _curPageIndex = 0;
-  int _count = 0;
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
 
@@ -125,16 +130,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       drawer: const MyDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // // TODO: testing SQL
-          // Bill bill = Bill(0, 0, 123.45, 123445456, "测试", "数码");
-          // DBProvider provider = DBProvider.getInstance();
-          // provider.insertBill(bill);
-          Navigator.of(context).push(
-              MaterialPageRoute(
-                  fullscreenDialog: true,
-                  builder: (BuildContext context) {
-                    return SubmitPage();
-                  }));
+          Navigator.of(context).push(MaterialPageRoute(
+              fullscreenDialog: true,
+              builder: (BuildContext context) {
+                return SubmitPage();
+              }));
         },
         tooltip: '记一笔',
         child: const Icon(Icons.add),

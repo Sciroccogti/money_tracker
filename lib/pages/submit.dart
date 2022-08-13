@@ -99,7 +99,10 @@ class _SubmitPageState extends State<SubmitPage> with TickerProviderStateMixin {
                 OutlinedButton(
                   onPressed: () {
                     DBProvider provider = DBProvider.getInstance();
-                    provider.insertBill(bill);
+                    if (bill.amount > 0) {
+                      provider.insertBill(bill);
+                      Navigator.of(context).pop();
+                    }
                   },
                   child: Icon(Icons.check),
                 )

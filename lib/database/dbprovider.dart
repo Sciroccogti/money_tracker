@@ -3,15 +3,17 @@
  * @author Sciroccogti (scirocco_gti@yeah.net)
  * @brief ref: https://github.com/mCyp/flutter_hoo
  * @date 2022-08-10 23:42:38
- * @modified: 2022-08-10 23:42:50
+ * @modified: 2022-08-13 16:08:22
  */
+
+import 'package:flutter/material.dart';
 
 import 'bill.dart';
 
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
-class DBProvider {
+class DBProvider with ChangeNotifier {
   // singleton
   static final DBProvider _singleton = DBProvider._internal();
 
@@ -28,6 +30,7 @@ class DBProvider {
 
   // DBProvider
   static late Database _db;
+  int length = 0;
 
   Future<Database> get db async => _db;
 
@@ -48,22 +51,22 @@ class DBProvider {
           "category TEXT,"
           "originID INTEGER"
           ");");
+      length = 0;
+    }, onOpen: (Database db) async {
+      length = Sqflite.firstIntValue(
+              await db.rawQuery("SELECT COUNT(*) FROM Bills")) ??
+          0;
     });
   }
 
 // Future _onCreate(Database db, int version) async {}
 
-  Future<int> getLength() async {
-    Database database = await db;
-    return Sqflite.firstIntValue(
-            await database.rawQuery("SELECT COUNT(*) FROM Bills")) ??
-        0;
-  }
-
   void insertBill(Bill bill) async {
     Database database = await db;
     int id = await database.insert("Bills", bill.toMap(),
         conflictAlgorithm: ConflictAlgorithm.fail);
+    length++;
+    notifyListeners();
   }
 
   void insertBillRaw(Bill bill) async {
@@ -81,6 +84,7 @@ class DBProvider {
           bill.category,
           bill.originID
         ]);
-    // insert("Bills", bill.toMap(), conflictAlgorithm: ConflictAlgorithm.fail);
+    length++;
+    notifyListeners();
   }
 }
