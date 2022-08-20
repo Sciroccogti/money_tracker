@@ -27,7 +27,9 @@ void main() async {
     // String buildNumber = packageInfo.buildNumber;
   });
 
-  await DBProvider.getInstanceAndInit(); // TODO: ChangeNotifierProvider 也会实例化
+  DBProvider provider = await DBProvider.getInstanceAndInit(); // TODO: ChangeNotifierProvider 也会实例化
+
+  provider.fetchCates();
 
   runApp(ChangeNotifierProvider(
     create: (context) => DBProvider(),
@@ -46,8 +48,9 @@ class MyApp extends StatelessWidget {
       title: _title,
       theme: ThemeData(
         useMaterial3: true,
-        primaryColor: primaryColor,
-        backgroundColor: secondaryColor,
+        colorSchemeSeed: primaryColor,
+        // primaryColor: primaryColor,
+        // backgroundColor: secondaryColor,
       ),
       home: MyStatefulWidget(),
       localizationsDelegates: [

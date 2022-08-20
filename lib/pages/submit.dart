@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:money_tracker/database/bill.dart';
+import 'package:money_tracker/database/category.dart';
 import 'package:money_tracker/database/dbprovider.dart';
 import 'package:money_tracker/vars.dart';
 
@@ -24,7 +25,9 @@ class SubmitPage extends StatefulWidget {
 class _SubmitPageState extends State<SubmitPage>
     with TickerProviderStateMixin, RestorationMixin {
   late TabController _tabController;
-  final RestorableDateTime _selectedDate = RestorableDateTime(DateTime.now()); // 选中的日期
+  final RestorableDateTime _selectedDate =
+      RestorableDateTime(DateTime.now()); // 选中的日期
+  int _selectedCategoryIndex = -1;
 
   @override
   String? get restorationId => widget.restorationId;
@@ -77,28 +80,72 @@ class _SubmitPageState extends State<SubmitPage>
     _tabController = TabController(length: 3, vsync: this);
   }
 
+  Widget buildCategoryList(int tabIndex) {
+    DBProvider provider = DBProvider.getInstance();
+
+    return GridView.builder(
+        itemCount: provider.cates_.length,
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 80),
+        itemBuilder: (context, index) {
+          return GridTile(
+            footer: Center(
+                child: Text(
+              provider.cates_[index].category,
+              style: TextStyle(
+                color: _selectedCategoryIndex == index
+                    ? typeColors_[tabIndex]
+                    : Colors.grey,
+              ),
+            )),
+            child: TextButton(
+              child: Icon(
+                categoryIcons_[provider.cates_[index].icon],
+                color: _selectedCategoryIndex == index
+                    ? typeColors_[tabIndex]
+                    : Colors.grey,
+              ),
+              onPressed: () {
+                _selectedCategoryIndex = index;
+                setState(() {
+                  build(context);
+                });
+              },
+            ),
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     Bill bill = Bill(-1, -1, -1, -1, "", "");
+    String dateString = _selectedDate.value.toString();
+    DateTime now = DateTime.now();
+    DateTime date = _selectedDate.value;
+    if (date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day) {
+      dateString =
+          '今天 ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    } else if (date.year != now.year) {
+      dateString =
+          '${date.year}-${date.month}月${date.day}日 ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    } else {
+      dateString =
+          '${date.month}月${date.day}日 ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    }
 
     return Scaffold(
         appBar: AppBar(
-          title: Text("新增账单"),
+          title: const Text("新增账单"),
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
           bottom: TabBar(
-            indicatorColor: secondaryColor,
             controller: _tabController,
-            tabs: [
-              Tab(
-                text: "支出",
-              ),
-              Tab(
-                text: "收入",
-              ),
-              Tab(
-                text: "转账",
-              ),
+            tabs: const [
+              Tab(text: "支出"),
+              Tab(text: "收入"),
+              Tab(text: "转账"),
             ],
           ),
         ),
@@ -108,81 +155,90 @@ class _SubmitPageState extends State<SubmitPage>
               child: TabBarView(
                 controller: _tabController,
                 children: <Widget>[
-                  Row(
-                    children: [Text("It's cloudy here")],
-                  ),
-                  Row(
-                    children: [Text("It's rainy here")],
-                  ),
-                  Row(
-                    children: [Text("It's sunny here")],
-                  ),
+                  buildCategoryList(0),
+                  buildCategoryList(1),
+                  buildCategoryList(2),
                 ],
               ),
             ),
-            Row(
-              children: [
-                TextButton(
-                    onPressed: () {
-                      _restorableDatePickerRouteFuture.present();
-                    },
-                    child: Text(_selectedDate.value.toString()))
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    decoration: InputDecoration(
-                      labelText: "备注",
+            Container(
+              color: Theme.of(context).selectedRowColor,
+              padding: const EdgeInsets.all(10),
+              child: Column(children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    OutlinedButton(
+                      onPressed: () {
+                        _restorableDatePickerRouteFuture.present();
+                      },
+                      child: Text(dateString),
                     ),
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (String? value) {
-                      if (value != null) {
-                        bill.name = value;
-                      }
-                      return null;
-                    },
-                  ),
+                    Expanded(
+                      child: TextFormField(
+                        textAlign: TextAlign.end,
+                        decoration: const InputDecoration(
+                            hintText: "0.0", border: InputBorder.none
+                            ),
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (String? value) {
+                          if (value != null) {
+                            bill.amount = double.tryParse(value) ?? 0;
+                            if (bill.amount == 0) {
+                              return "请输入正确的金额！";
+                            }
+                            return null;
+                          } else {
+                            return "请输入正确的金额！";
+                          }
+                        },
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r"[0-9,\.]"))
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                Expanded(
-                  child: TextFormField(
-                    decoration: InputDecoration(
-                      labelText: "金额",
-                      // fillColor: typeColors_[_tabController.index],
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        decoration: const InputDecoration(
+                          hintText: "备注",
+                          border: InputBorder.none,
+                        ),
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (String? value) {
+                          if (value != null) {
+                            bill.name = value;
+                          }
+                          return null;
+                        },
+                      ),
                     ),
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (String? value) {
-                      if (value != null) {
-                        bill.amount = double.tryParse(value) ?? 0;
-                        if (bill.amount == 0) {
-                          return "请输入正确的金额！";
+                    ElevatedButton(
+                      onPressed: () {
+                        DBProvider provider = DBProvider.getInstance();
+                        if (bill.amount > 0 && _selectedCategoryIndex >= 0) {
+                          bill.category =
+                              provider.cates_[_selectedCategoryIndex].category;
+                          bill.type = _tabController.index;
+                          bill.time =
+                              _selectedDate.value.millisecondsSinceEpoch;
+                          provider.insertBill(bill);
+                          Navigator.of(context).pop();
                         }
-                        return null;
-                      } else {
-                        return "请输入正确的金额！";
-                      }
-                    },
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r"[0-9,\.]"))
-                    ],
-                  ),
+                      },
+                      child: const Icon(Icons.check),
+                    )
+                  ],
                 ),
-                OutlinedButton(
-                  onPressed: () {
-                    DBProvider provider = DBProvider.getInstance();
-                    if (bill.amount > 0) {
-                      bill.type = _tabController.index;
-                      bill.time = _selectedDate.value.millisecondsSinceEpoch;
-                      provider.insertBill(bill);
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: Icon(Icons.check),
+                SizedBox(
+                  height: 120,
                 )
-              ],
-            ),
+              ]),
+            )
           ],
         ));
   }

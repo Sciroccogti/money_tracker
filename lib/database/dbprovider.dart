@@ -6,12 +6,28 @@
  * @modified: 2022-08-13 16:08:22
  */
 
-import 'package:flutter/material.dart';
-
 import 'bill.dart';
-
+import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
+
+import 'category.dart';
+
+List<Category> _defaultCategories_ = [
+  Category("数码", "工资条"),
+  Category("交通", "公交"),
+  Category("娱乐", "娱乐设施"),
+  Category("教育", "教育"),
+  Category("理财", "理财"),
+  Category("餐饮", "餐饮"),
+  Category("日用", "日用"),
+  Category("通讯", "通讯"),
+  Category("运动", "棒球"),
+  Category("化妆", "化妆品"),
+  Category("住房", "住房"),
+  Category("医疗", "医疗"),
+  Category("购物", "购物"),
+];
 
 class DBProvider with ChangeNotifier {
   // singleton
@@ -30,7 +46,8 @@ class DBProvider with ChangeNotifier {
 
   // DBProvider
   static late Database _db;
-  int length = 0;
+  int billsLength = 0;
+  List<Category> cates_ = [];
 
   Future<Database> get db async => _db;
 
@@ -41,6 +58,7 @@ class DBProvider with ChangeNotifier {
     return await openDatabase(path, version: 1,
         onCreate: (Database db, int version) async {
       // When creating the db, create the table
+      // Table Bill
       await db.execute("CREATE TABLE Bills ("
           "id INTEGER PRIMARY KEY AUTOINCREMENT,"
           "account INTEGER,"
@@ -51,9 +69,21 @@ class DBProvider with ChangeNotifier {
           "category TEXT,"
           "originID INTEGER"
           ");");
-      length = 0;
+      // Table Categories
+      await db.execute("CREATE TABLE Categories ("
+          "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+          "category TEXT,"
+          "type INTEGER,"
+          "icon TEXT"
+          ");");
+
+      for (Category cate in _defaultCategories_) {
+        int id = await db.insert("Categories", cate.toMap(),
+            conflictAlgorithm: ConflictAlgorithm.fail);
+      }
+      billsLength = 0;
     }, onOpen: (Database db) async {
-      length = Sqflite.firstIntValue(
+      billsLength = Sqflite.firstIntValue(
               await db.rawQuery("SELECT COUNT(*) FROM Bills")) ??
           0;
     });
@@ -65,7 +95,7 @@ class DBProvider with ChangeNotifier {
     Database database = await db;
     int id = await database.insert("Bills", bill.toMap(),
         conflictAlgorithm: ConflictAlgorithm.fail);
-    length++;
+    billsLength++;
     notifyListeners();
   }
 
@@ -84,7 +114,7 @@ class DBProvider with ChangeNotifier {
           bill.category,
           bill.originID
         ]);
-    length++;
+    billsLength++;
     notifyListeners();
   }
 
@@ -108,4 +138,29 @@ class DBProvider with ChangeNotifier {
 // void getBillByTime() async {
 //   DateTime.now().millisecondsSinceEpoch;
 // }
+  void fetchCates() async {
+    DBProvider provider = DBProvider.getInstance();
+    cates_ = await provider.getCategories();
+  }
+
+  void insertCategory(Category cate) async {
+    Database database = await db;
+    int id = await database.insert("Categories", cate.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.fail);
+    notifyListeners(); // TODO: should we?
+  }
+
+  Future<List<Category>> getCategories() async {
+    Database database = await db;
+    List<Map<String, dynamic>> maps_ = await database.query(
+      "Categories",
+    );
+    List<Category> results_ = [];
+
+    for (Map<String, dynamic> map in maps_) {
+      results_.add(Category.fromMap(map));
+    }
+
+    return results_;
+  }
 }

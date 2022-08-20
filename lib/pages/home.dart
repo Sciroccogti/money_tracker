@@ -22,11 +22,14 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          Expanded(
-            child: Consumer<DBProvider>(
-              builder: (context, database, child) =>
-                  Text("共 ${database.length} 条账单"),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Consumer<DBProvider>(
+                builder: (context, database, child) =>
+                    Text("共 ${database.billsLength} 条账单"),
+              ),
+            ],
           ),
           Expanded(
             child: _BillList(),
@@ -74,7 +77,7 @@ class _BillListState extends State<_BillList> {
             builder:
                 (BuildContext context, AsyncSnapshot<List<Bill>> snapshot) {
               print("build:");
-              print(dbWatcher.length);
+              print(dbWatcher.billsLength);
               print(bills_.length);
               if (snapshot.hasData) {
                 bills_ = snapshot.data!;
@@ -95,6 +98,10 @@ class _BillListState extends State<_BillList> {
 
                     return ListTile(
                       title: Text(bills_[index].name),
+                      leading: Icon(
+                        categoryIcons_[bills_[index].category],
+                        color: typeColors_[bills_[index].type],
+                      ),
                       trailing: Text(
                         "$prefix${bills_[index].amount}",
                         style:
