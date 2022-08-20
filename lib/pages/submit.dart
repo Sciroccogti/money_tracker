@@ -149,7 +149,9 @@ class _SubmitPageState extends State<SubmitPage>
             ],
           ),
         ),
-        body: Column(
+        body: GridView(
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 540),
           children: [
             Expanded(
               child: TabBarView(
@@ -234,9 +236,6 @@ class _SubmitPageState extends State<SubmitPage>
                     )
                   ],
                 ),
-                SizedBox(
-                  height: 120,
-                )
               ]),
             )
           ],
