@@ -99,7 +99,7 @@ class _BillListState extends State<_BillList> {
                     return ListTile(
                       title: Text(bills_[index].name),
                       leading: Icon(
-                        categoryIcons_[bills_[index].category],
+                        categoryIcons_[dbWatcher.cates_[bills_[index].category]?.icon],
                         color: typeColors_[bills_[index].type],
                       ),
                       trailing: Text(

@@ -27,7 +27,7 @@ class _SubmitPageState extends State<SubmitPage>
   late TabController _tabController;
   final RestorableDateTime _selectedDate =
       RestorableDateTime(DateTime.now()); // 选中的日期
-  int _selectedCategoryIndex = -1;
+  String _selectedCategoryName = "";
 
   @override
   String? get restorationId => widget.restorationId;
@@ -82,31 +82,35 @@ class _SubmitPageState extends State<SubmitPage>
 
   Widget buildCategoryList(int tabIndex) {
     DBProvider provider = DBProvider.getInstance();
+    Iterator<Category> cateIter = provider.cates_.values.iterator;
 
     return GridView.builder(
         itemCount: provider.cates_.length,
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
             maxCrossAxisExtent: 80),
         itemBuilder: (context, index) {
+          cateIter.moveNext();
+          Category curCate = cateIter.current;
+
           return GridTile(
             footer: Center(
                 child: Text(
-              provider.cates_[index].category,
+              curCate.category,
               style: TextStyle(
-                color: _selectedCategoryIndex == index
+                color: _selectedCategoryName == curCate.category
                     ? typeColors_[tabIndex]
                     : Theme.of(context).disabledColor,
               ),
             )),
             child: TextButton(
               child: Icon(
-                categoryIcons_[provider.cates_[index].icon],
-                color: _selectedCategoryIndex == index
+                categoryIcons_[provider.cates_[curCate.category]?.icon],
+                color: _selectedCategoryName == curCate.category
                     ? typeColors_[tabIndex]
                     : Theme.of(context).disabledColor,
               ),
               onPressed: () {
-                _selectedCategoryIndex = index;
+                _selectedCategoryName = curCate.category;
                 setState(() {
                   build(context);
                 });
@@ -220,9 +224,10 @@ class _SubmitPageState extends State<SubmitPage>
                     ElevatedButton(
                       onPressed: () {
                         DBProvider provider = DBProvider.getInstance();
-                        if (bill.amount > 0 && _selectedCategoryIndex >= 0) {
-                          bill.category =
-                              provider.cates_[_selectedCategoryIndex].category;
+                        if (bill.amount > 0 &&
+                            provider.cates_
+                                .containsKey(_selectedCategoryName)) {
+                          bill.category = _selectedCategoryName;
                           bill.type = _tabController.index;
                           bill.time =
                               _selectedDate.value.millisecondsSinceEpoch;

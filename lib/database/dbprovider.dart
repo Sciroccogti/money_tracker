@@ -48,7 +48,7 @@ class DBProvider with ChangeNotifier {
   // DBProvider
   static late Database _db;
   int billsLength = 0;
-  List<Category> cates_ = [];
+  Map<String, Category> cates_ = {};
 
   Future<Database> get db async => _db;
 
@@ -151,15 +151,16 @@ class DBProvider with ChangeNotifier {
     notifyListeners(); // TODO: should we?
   }
 
-  Future<List<Category>> getCategories() async {
+  Future<Map<String, Category>> getCategories() async {
     Database database = await db;
     List<Map<String, dynamic>> maps_ = await database.query(
       "Categories",
     );
-    List<Category> results_ = [];
+    Map<String, Category> results_ = {};
 
     for (Map<String, dynamic> map in maps_) {
-      results_.add(Category.fromMap(map));
+      Category cate = Category.fromMap(map);
+      results_[cate.category] = cate;
     }
 
     return results_;
