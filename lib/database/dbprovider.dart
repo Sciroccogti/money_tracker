@@ -14,7 +14,8 @@ import 'package:sqflite/sqflite.dart';
 import 'category.dart';
 
 List<Category> _defaultCategories_ = [
-  Category("数码", "工资条"),
+  Category("数码", "数码-手机"),
+  Category("工资", "工资条"),
   Category("交通", "公交"),
   Category("娱乐", "娱乐设施"),
   Category("教育", "教育"),

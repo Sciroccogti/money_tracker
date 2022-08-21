@@ -95,7 +95,7 @@ class _SubmitPageState extends State<SubmitPage>
               style: TextStyle(
                 color: _selectedCategoryIndex == index
                     ? typeColors_[tabIndex]
-                    : Colors.grey,
+                    : Theme.of(context).disabledColor,
               ),
             )),
             child: TextButton(
@@ -103,7 +103,7 @@ class _SubmitPageState extends State<SubmitPage>
                 categoryIcons_[provider.cates_[index].icon],
                 color: _selectedCategoryIndex == index
                     ? typeColors_[tabIndex]
-                    : Colors.grey,
+                    : Theme.of(context).disabledColor,
               ),
               onPressed: () {
                 _selectedCategoryIndex = index;
@@ -137,10 +137,9 @@ class _SubmitPageState extends State<SubmitPage>
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text("新增账单"),
-          backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
-          bottom: TabBar(
+          backgroundColor: Theme.of(context).colorScheme.secondary,
+          foregroundColor: Theme.of(context).colorScheme.onSecondary,
+          title: TabBar(
             controller: _tabController,
             tabs: const [
               Tab(text: "支出"),
@@ -149,22 +148,20 @@ class _SubmitPageState extends State<SubmitPage>
             ],
           ),
         ),
-        body: GridView(
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 540),
+        body: GridView.extent(
+          physics: const NeverScrollableScrollPhysics(),
+          maxCrossAxisExtent: 540,
           children: [
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: <Widget>[
-                  buildCategoryList(0),
-                  buildCategoryList(1),
-                  buildCategoryList(2),
-                ],
-              ),
+            TabBarView(
+              controller: _tabController,
+              children: <Widget>[
+                buildCategoryList(0),
+                buildCategoryList(1),
+                buildCategoryList(2),
+              ],
             ),
             Container(
-              color: Theme.of(context).selectedRowColor,
+              color: Theme.of(context).colorScheme.secondaryContainer,
               padding: const EdgeInsets.all(10),
               child: Column(children: [
                 Row(
@@ -180,8 +177,9 @@ class _SubmitPageState extends State<SubmitPage>
                       child: TextFormField(
                         textAlign: TextAlign.end,
                         decoration: const InputDecoration(
-                            hintText: "0.0", border: InputBorder.none
-                            ),
+                          hintText: "0.0",
+                          border: InputBorder.none,
+                        ),
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         validator: (String? value) {
                           if (value != null) {

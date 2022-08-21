@@ -48,10 +48,14 @@ class MyApp extends StatelessWidget {
       title: _title,
       theme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: primaryColor,
-        // primaryColor: primaryColor,
-        // backgroundColor: secondaryColor,
+        colorSchemeSeed: primaryColorDark,
       ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: primaryColorDark,
+        brightness: Brightness.dark
+      ),
+      themeMode: ThemeMode.system,
       home: MyStatefulWidget(),
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,

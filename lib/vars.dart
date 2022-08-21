@@ -20,6 +20,7 @@ List<Color> typeColors_ = [Colors.red, Colors.green, Colors.blue];
 
 const Map<String, IconData> categoryIcons_ = {
   "工资条": IconData(0xe60f, fontFamily: "IconFont"),
+  "数码-手机": IconData(0xe609, fontFamily: "IconFont"),
   "公交": IconData(0xe601, fontFamily: "IconFont"),
   "娱乐设施": IconData(0xe608, fontFamily: "IconFont"),
   "教育": IconData(0xe60a, fontFamily: "IconFont"),
