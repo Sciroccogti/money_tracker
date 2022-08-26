@@ -124,21 +124,32 @@ class DBProvider with ChangeNotifier {
     List<Map<String, dynamic>> maps_ = await database.query(
       "Bills",
     );
-    List<Bill> results_ = [];
 
+    List<Bill> results_ = [];
     for (Map<String, dynamic> map in maps_) {
       results_.add(Bill.fromMap(map));
     }
 
-    print("results_.length=");
-    print(results_.length);
+    return results_;
+  }
+
+  Future<List<Bill>> getBillByRange(DateTimeRange range) async {
+    Database database = await db;
+    List<Map<String, dynamic>> maps_ = await database.query("Bills",
+        where: "time >= ? and time <= ?",
+        whereArgs: [
+          range.start.millisecondsSinceEpoch,
+          range.end.millisecondsSinceEpoch
+        ]);
+
+    List<Bill> results_ = [];
+    for (Map<String, dynamic> map in maps_) {
+      results_.add(Bill.fromMap(map));
+    }
 
     return results_;
   }
 
-// void getBillByTime() async {
-//   DateTime.now().millisecondsSinceEpoch;
-// }
   void fetchCates() async {
     DBProvider provider = DBProvider.getInstance();
     cates_ = await provider.getCategories();

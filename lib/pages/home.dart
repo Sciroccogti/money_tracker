@@ -9,7 +9,6 @@
 import 'package:flutter/material.dart';
 import 'package:money_tracker/database/bill.dart';
 import 'package:money_tracker/database/dbprovider.dart';
-import 'package:money_tracker/pages/submit.dart';
 import 'package:money_tracker/vars.dart';
 import 'package:provider/provider.dart';
 
@@ -31,28 +30,47 @@ class HomePage extends StatelessWidget {
               ),
             ],
           ),
-          Expanded(
-            child: _BillList(),
-            // child: Consumer<DBProvider>(
-            //   builder: (context, database, child) =>
-            //       _BillList(), // TODO 双重 listen了
-            // ),
-          )
+          const Expanded(
+            child: _BillCardsColumn(),
+          ),
         ],
       ),
     );
   }
 }
 
-class _BillList extends StatefulWidget {
-  const _BillList({Key? key}) : super(key: key);
+class _BillCardsColumn extends StatelessWidget {
+  const _BillCardsColumn({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _BillListState();
+  Widget build(BuildContext context) {
+    DateTime now = DateTime.now();
+
+    List<Widget> cardChild = [];
+    for (int day = 1; day <= now.day; day++) {
+      DateTimeRange range = DateTimeRange(
+          start: DateTime(now.year, now.month, day),
+          end: DateTime(now.year, now.month, day, 23, 59, 59));
+      cardChild.add(_BillCard(range: range));
+    }
+
+    return ListView(padding: const EdgeInsets.all(10), children: cardChild);
+  }
 }
 
-class _BillListState extends State<_BillList> {
+class _BillCard extends StatefulWidget {
+  const _BillCard({Key? key, required this.range}) : super(key: key);
+
+  final DateTimeRange range;
+
+  @override
+  State<StatefulWidget> createState() => _BillCardState();
+}
+
+class _BillCardState extends State<_BillCard> {
   List<Bill> bills_ = [];
+  double incomeSum = 0;
+  double outlaySum = 0;
 
   void fetchBills() async {
     DBProvider provider = DBProvider.getInstance();
@@ -68,47 +86,73 @@ class _BillListState extends State<_BillList> {
   @override
   Widget build(BuildContext context) {
     var dbWatcher = context.watch<DBProvider>();
+    DateTimeRange range = widget.range;
 
     return AnimatedBuilder(
         animation: dbWatcher,
         builder: (BuildContext context, Widget? child) {
           return FutureBuilder<List<Bill>>(
-            future: dbWatcher.getBills(),
+            future: dbWatcher.getBillByRange(range),
             builder:
                 (BuildContext context, AsyncSnapshot<List<Bill>> snapshot) {
-              print("build:");
-              print(dbWatcher.billsLength);
-              print(bills_.length);
               if (snapshot.hasData) {
                 bills_ = snapshot.data!;
+                print("${range.start.day} ${range.start.hour}");
+                print("hasData: ${bills_.length}");
+                for (Bill bill in bills_) {
+                  if (bill.type == BillType.income.index) {
+                    incomeSum += bill.amount;
+                  } else if (bill.type == BillType.outlay.index) {
+                    outlaySum += bill.amount;
+                  }
+                }
               }
+              if (bills_.isEmpty) {
+                return const SizedBox.shrink();
+              }
+              return Card(
+                  child: Column(children: [
+                Container(
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                            "${range.start.month}月${range.start.day}日 ${chineseWeek[range.start.weekday]}"),
+                        Text("支:${outlaySum.toStringAsFixed(2)}"),
+                        Text("收:${incomeSum.toStringAsFixed(2)}"),
+                      ],
+                    )),
+                ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: bills_.length,
+                    itemBuilder: (context, index) {
+                      String prefix = "";
+                      switch (bills_[index].type) {
+                        case 0:
+                          prefix = "-";
+                          break;
+                        case 1:
+                          prefix = "+";
+                          break;
+                      }
 
-              return ListView.builder(
-                  itemCount: bills_.length,
-                  itemBuilder: (context, index) {
-                    String prefix = "";
-                    switch (bills_[index].type) {
-                      case 0:
-                        prefix = "-";
-                        break;
-                      case 1:
-                        prefix = "+";
-                        break;
-                    }
-
-                    return ListTile(
-                      title: Text(bills_[index].name),
-                      leading: Icon(
-                        categoryIcons_[dbWatcher.cates_[bills_[index].category]?.icon],
-                        color: typeColors_[bills_[index].type],
-                      ),
-                      trailing: Text(
-                        "$prefix${bills_[index].amount}",
-                        style:
-                            TextStyle(color: typeColors_[bills_[index].type]),
-                      ),
-                    );
-                  });
+                      return ListTile(
+                        title: Text(bills_[index].name),
+                        leading: Icon(
+                          categoryIcons_[
+                              dbWatcher.cates_[bills_[index].category]?.icon],
+                          color: typeColors_[bills_[index].type],
+                        ),
+                        trailing: Text(
+                          "$prefix${bills_[index].amount}",
+                          style:
+                              TextStyle(color: typeColors_[bills_[index].type]),
+                        ),
+                      );
+                    })
+              ]));
             },
           );
         });

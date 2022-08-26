@@ -36,3 +36,13 @@ const Map<String, IconData> categoryIcons_ = {
 };
 
 int dbLength = 0;
+
+const List<String> chineseWeek = ["", "周一", "周二", "周三", "周四", "周五", "周六", "周日"];
+
+enum BillType {
+  outlay,
+  income,
+  transfer,
+  refund,
+  deposit,
+}
