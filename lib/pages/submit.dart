@@ -89,6 +89,10 @@ class _SubmitPageState extends State<SubmitPage>
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
             maxCrossAxisExtent: 80),
         itemBuilder: (context, index) {
+          if (index == 0) {
+            // restart iter
+            cateIter = provider.cates_.values.iterator;
+          }
           cateIter.moveNext();
           Category curCate = cateIter.current;
 
@@ -141,10 +145,16 @@ class _SubmitPageState extends State<SubmitPage>
 
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.secondary,
-          foregroundColor: Theme.of(context).colorScheme.onSecondary,
+          backgroundColor: Theme.of(context).secondaryHeaderColor,
           title: TabBar(
             controller: _tabController,
+            labelColor: Theme.of(context).colorScheme.onSecondaryContainer,
+            labelStyle:
+                const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            unselectedLabelColor: Theme.of(context).disabledColor,
+            unselectedLabelStyle:
+                const TextStyle(fontWeight: FontWeight.normal, fontSize: 16),
+            indicatorColor: Theme.of(context).dividerColor,
             tabs: const [
               Tab(text: "支出"),
               Tab(text: "收入"),
