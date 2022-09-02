@@ -15,6 +15,7 @@ import 'package:money_tracker/pages/home.dart';
 import 'package:money_tracker/pages/stats.dart';
 import 'package:money_tracker/pages/submit.dart';
 import 'package:money_tracker/vars.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
@@ -61,6 +62,7 @@ class MyApp extends StatelessWidget {
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
+        MonthYearPickerLocalizations.delegate,
       ],
       supportedLocales: [
         Locale('zh', 'CN'),
@@ -107,21 +109,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   Widget build(BuildContext context) {
     print("redraw main!");
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Money Tracker'),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.move_to_inbox),
-            tooltip: "导入账单",
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.search),
-            tooltip: "搜索账单",
-          ),
-        ],
-      ),
       body: Center(
         child: bodyList_[_curPageIndex],
       ),
@@ -146,7 +133,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
           ),
         ],
       ),
-      drawer: const MyDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(

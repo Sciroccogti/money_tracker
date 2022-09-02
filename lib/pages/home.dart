@@ -3,22 +3,57 @@
  * @author Sciroccogti (scirocco_gti@yeah.net)
  * @brief 
  * @date 2022-08-10 21:48:00
- * @modified: 2022-08-13 23:19:35
+ * @modified: 2022-09-02 21:33:10
  */
 
 import 'package:flutter/material.dart';
 import 'package:money_tracker/database/bill.dart';
 import 'package:money_tracker/database/dbprovider.dart';
 import 'package:money_tracker/vars.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 import 'package:provider/provider.dart';
 
+import 'drawer.dart';
+
 // https://flutter.cn/docs/development/data-and-backend/state-mgmt/simple
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  DateTime now = DateTime.now();
+  late int selectedYear = now.year;
+  late int selectedMon = now.month;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: InkWell(
+          onTap: () => _titleOnTap(context),
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Text("$selectedYear-${selectedMon.toString().padLeft(2, '0')}"),
+            Icon(Icons.arrow_drop_down)
+          ]),
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.move_to_inbox),
+            tooltip: "导入账单",
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.search),
+            tooltip: "搜索账单",
+          ),
+        ],
+      ),
+      drawer: const MyDrawer(),
       body: Column(
         children: [
           Row(
@@ -30,27 +65,51 @@ class HomePage extends StatelessWidget {
               ),
             ],
           ),
-          const Expanded(
-            child: _BillCardsColumn(),
+          Expanded(
+            child: _BillCardsColumn(year: selectedYear, month: selectedMon),
           ),
         ],
       ),
     );
   }
+
+  Future<void> _titleOnTap(BuildContext context) async {
+    final localeObj = Localizations.localeOf(context);
+    final selected = await showMonthYearPicker(
+      context: context,
+      initialDate: now,
+      firstDate: DateTime(1999),
+      lastDate: now,
+      locale: localeObj,
+    );
+    if (selected != null) {
+      setState(() {
+        selectedMon = selected.month;
+        selectedYear = selected.year;
+      });
+    }
+  }
 }
 
 class _BillCardsColumn extends StatelessWidget {
-  const _BillCardsColumn({Key? key}) : super(key: key);
+  const _BillCardsColumn({Key? key, required this.year, required this.month})
+      : super(key: key);
+
+  final int year, month;
 
   @override
   Widget build(BuildContext context) {
     DateTime now = DateTime.now();
+    int lastDay = now.day;
 
     List<Widget> cardChild = [];
-    for (int day = 1; day <= now.day; day++) {
+    if (now.year != year || now.month != month) {
+      lastDay = 31;
+    }
+    for (int day = 1; day <= lastDay; day++) {
       DateTimeRange range = DateTimeRange(
-          start: DateTime(now.year, now.month, day),
-          end: DateTime(now.year, now.month, day, 23, 59, 59));
+          start: DateTime(year, month, day),
+          end: DateTime(year, month, day, 23, 59, 59));
       cardChild.add(_BillCard(range: range));
     }
 
